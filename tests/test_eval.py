@@ -97,9 +97,24 @@ class TestGetAllHands:
         assert 12 == len(list(results_generator))
 
     def test_range(self):
-        """ Test generating a  pairs. """
+        """ Test generating a  two cards. """
         results_generator = equity.get_all_hands("KK AKs")
         assert 16 == len(list(results_generator))
+
+    def test_wider_range(self):
+        """ Test generating a wider range. """
+        results_generator = equity.get_all_hands("KQs")
+        assert 12 == len(list(results_generator))
+
+
+class TestPercentage:
+    def test_hand_percentage(self):
+        for row in equity.hand_ranking.itertuples():
+            assert equity.hand_percentage(row.hand) == row.value
+
+    def test_percentage_hand(self):
+        for row in equity.hand_ranking.itertuples():
+            assert equity.hand_percentage(row.hand) == row.value
 
 
 class TestFlopTurnRiver:
@@ -128,13 +143,27 @@ class TestEquity:
         assert time < 10
 
     @staticmethod
-    def test_equity():
+    def test_equity_from_range_descr():
         answer_list = [
             {"range": ["AA", "55 AT A8s"], "equity": [0.844, 0.156]},
+            {"range": ["AsAh", "55 AT A8s"], "equity": [0.844, 0.156]},
         ]
         rounding = 1
         for answer in answer_list:
-            equity_list = equity.equity_from_range_descr(answer["range"], times=10000)
+            equity_list = equity.equity_from_range_descr(answer["range"], times=1000)
+            np.testing.assert_almost_equal(
+                np.round(equity_list, rounding), np.round(answer["equity"], rounding)
+            )
+
+    @staticmethod
+    def test_equity():
+        answer_list = [
+            {"range": [0.5, 10], "equity": [0.844, 0.156]},
+            {"range": ["AsAh", "55 AT A8s"], "equity": [0.844, 0.156]},
+        ]
+        rounding = 1
+        for answer in answer_list:
+            equity_list = equity.equity(answer["range"], times=1000)
             np.testing.assert_almost_equal(
                 np.round(equity_list, rounding), np.round(answer["equity"], rounding)
             )

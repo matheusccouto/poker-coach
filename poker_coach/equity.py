@@ -2,7 +2,7 @@
 
 import itertools
 import os
-from typing import Sequence, Dict, Iterator, Collection
+from typing import Sequence, Dict, Iterator, Union
 
 import numpy as np
 import pandas as pd
@@ -145,6 +145,8 @@ def get_all_hands(descr_range: str) -> Sequence[str]:
     """
     Get every possible hand from a description of several hands range.
 
+    If the card has the full description, it won't try to get all hands.
+
     Args:
         descr_range: Description range where each description is separated by space.
 
@@ -152,8 +154,38 @@ def get_all_hands(descr_range: str) -> Sequence[str]:
         Sequence with all hands possible.
     """
     descr_list = descr_range.split(" ")
-    hands_nested = [descr_to_higher_or_equal_hands(descr) for descr in descr_list]
+    hands_nested = [
+        descr_to_higher_or_equal_hands(descr) if len(descr) < 4 else descr
+        for descr in descr_list
+    ]
     return list(set(utils.flatten(hands_nested)))  # Remove duplicates
+
+
+def hand_percentage(descr: str) -> float:
+    """
+    Get ranking percentage from a hand description.
+
+    Args:
+        descr: Hand description.
+
+    Returns:
+        Hand percentage.
+    """
+    descr = descr.replace("o", "")  # The ranking does not use the o notation.
+    return hand_ranking[hand_ranking["hand"] == descr]["value"].values[0]
+
+
+def percentage_range(descr: float) -> str:
+    """
+    Get hand range from a ranking percentage.
+
+    Args:
+        descr: Hand percentage.
+
+    Returns:
+        Hand range.
+    """
+    return hand_ranking[hand_ranking["value"] == descr]["range"].values[0]
 
 
 def flop_turn_river(dead: Sequence[str]) -> Sequence[str]:
@@ -248,3 +280,24 @@ def equity_from_range_descr(
     mean = np.mean(results, axis=0)
     norm_mean = mean / mean.sum()
     return norm_mean
+
+
+def equity(
+    players_ranges: Sequence[Union[str, float]], times: int = 10000
+) -> Sequence[Sequence[float]]:
+    """
+    Calculate each player pre-flop equity from their range descriptions or percentage
+    using Monte Carlo procedure.
+
+    Args:
+        players_ranges: Sequence of range descriptions or percentages.
+        times: Number of times to evaluate.
+
+    Returns:
+        Sequence of equities.
+    """
+    players_ranges = [
+        descr if isinstance(descr, str) else percentage_range(descr)
+        for descr in players_ranges
+    ]
+    return equity_from_range_descr(players_ranges, times)
