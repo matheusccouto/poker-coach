@@ -185,7 +185,7 @@ def percentage_range(descr: float) -> str:
     Returns:
         Hand range.
     """
-    return hand_ranking[hand_ranking["value"] == descr]["range"].values[0]
+    return hand_ranking[hand_ranking["value"] <= descr]["range"].values[-1]
 
 
 def flop_turn_river(dead: Sequence[str]) -> Sequence[str]:
