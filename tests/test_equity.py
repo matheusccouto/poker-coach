@@ -107,14 +107,21 @@ class TestGetAllHands:
         assert 12 == len(list(results_generator))
 
 
+class TestHandToDescr:
+    def test_hand_to_descr(self):
+        answers = {"6dQd": "Q6s", "AdAs": "AA"}
+        for key, val in answers.items():
+            assert equity.hand_to_descr(key) == val
+
+
 class TestPercentage:
     def test_hand_percentage(self):
         for row in equity.hand_ranking.itertuples():
-            assert equity.hand_percentage(row.hand) == row.value
+            assert equity.descr_to_percentage(row.hand) == row.value
 
     def test_percentage_hand(self):
         for row in equity.hand_ranking.itertuples():
-            assert equity.hand_percentage(row.hand) == row.value
+            assert equity.descr_to_percentage(row.hand) == row.value
 
 
 class TestFlopTurnRiver:

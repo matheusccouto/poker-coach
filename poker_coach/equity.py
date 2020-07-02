@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 import poker
+
 from poker_coach import utils
 
 BROADWAY_NUMBERS: Dict[str, int] = {"A": 14, "K": 13, "Q": 12, "J": 11, "T": 10}
@@ -23,6 +24,8 @@ DECK: Sequence[str] = [rank + suit for rank, suit in itertools.product(RANKS, SU
 hand_ranking_rel_path = os.path.join(DATA_FOLDER, HAND_RANKING_FILE)
 hand_ranking_path = os.path.join(os.path.dirname(__file__), hand_ranking_rel_path)
 hand_ranking = pd.read_csv(hand_ranking_path)
+
+reversed_broadway = {val: key for key, val in BROADWAY_NUMBERS.items()}
 
 
 def prepare_descr(descr: str) -> str:
@@ -161,7 +164,32 @@ def get_all_hands(descr_range: str) -> Sequence[str]:
     return list(set(utils.flatten(hands_nested)))  # Remove duplicates
 
 
-def hand_percentage(descr: str) -> float:
+def hand_to_descr(hand: str) -> str:
+    """
+    Get hand general description from detailed hand description.
+
+    Args:
+        hand: Detailed hand description.
+
+    Returns:
+        Hand percentage.
+    """
+    # Check if suited.
+    is_suited = hand[1] == hand[3]
+    # Extract cards ranks
+    hand = [hand[0], hand[2]]
+    # Transform into numerical, sort, then transform back into a string.
+    num_ranks = [BROADWAY_NUMBERS[rank] for rank in hand]
+    sorted_ranks = sorted(num_ranks, reverse=True)
+    str_ranks = [reversed_broadway[rank] for rank in sorted_ranks]
+    descr = "".join(str_ranks)
+    # Add suited mark if it is the case.
+    if is_suited:
+        descr += "s"
+    return descr
+
+
+def descr_to_percentage(descr: str) -> float:
     """
     Get ranking percentage from a hand description.
 
@@ -175,17 +203,17 @@ def hand_percentage(descr: str) -> float:
     return hand_ranking[hand_ranking["hand"] == descr]["value"].values[0]
 
 
-def percentage_range(descr: float) -> str:
+def percentage_range(percentage: float) -> str:
     """
     Get hand range from a ranking percentage.
 
     Args:
-        descr: Hand percentage.
+        percentage: Hand percentage.
 
     Returns:
         Hand range.
     """
-    return hand_ranking[hand_ranking["value"] <= descr]["range"].values[-1]
+    return hand_ranking[hand_ranking["value"] <= percentage]["range"].values[-1]
 
 
 def flop_turn_river(dead: Sequence[str]) -> Sequence[str]:
@@ -263,7 +291,7 @@ def eval_single(
 
 def equity_from_range_descr(
     players_ranges: Sequence[str], times: int = 10000
-) -> Sequence[Sequence[float]]:
+) -> Sequence[float]:
     """
     Calculate each player pre-flop equity from their range descriptions using Monte
     Carlo procedure.
@@ -284,7 +312,7 @@ def equity_from_range_descr(
 
 def equity(
     players_ranges: Sequence[Union[str, float]], times: int = 10000
-) -> Sequence[Sequence[float]]:
+) -> Sequence[float]:
     """
     Calculate each player pre-flop equity from their range descriptions or percentage
     using Monte Carlo procedure.

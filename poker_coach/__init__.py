@@ -42,10 +42,12 @@ class Scenario:
         self._villains_range = [
             np.random.normal(loc=avg, scale=std) for _ in range(n_seats - 1)
         ]
-        self._villains_range = np.clip(self._villains_range, self.MIN_ACTION, self.MAX_ACTION)
+        self._villains_range = np.clip(
+            self._villains_range, self.MIN_ACTION, self.MAX_ACTION
+        )
 
         self._villains_chips = [
-            np.random.randint(self.MIN_BB, self.MAX_BB) for _ in range(n_seats)
+            np.random.randint(self.MIN_BB, self.MAX_BB) for _ in range(n_seats - 1)
         ]
 
     @property
@@ -59,7 +61,7 @@ class Scenario:
         return self._hero_chips
 
     @property
-    def villain_chips(self) -> Sequence[int]:
+    def villains_chips(self) -> Sequence[float]:
         """ Get hero chips amount. """
         return self._villains_chips
 
@@ -69,9 +71,14 @@ class Scenario:
         return self._hero_hand
 
     @property
-    def hero_position(self) -> int:
-        """ Get hero position. """
+    def hero_index(self) -> int:
+        """ Get hero index. """
         return self._hero_position - self._n_seats
+
+    @property
+    def hero_position(self) -> str:
+        """ Get hero position name. """
+        return self.position_to_abbreviation(self.hero_index, self.n_seats)
 
     @property
     def villains_range(self) -> Sequence[float]:
@@ -81,12 +88,38 @@ class Scenario:
     @property
     def villains_before_range(self) -> Sequence[float]:
         """ Get ranges from villains before the hero. """
-        return self._villains_range[:self._hero_position]
+        return self.villains_range[: self._hero_position]
 
     @property
     def villains_after_range(self) -> Sequence[float]:
         """ Get ranges from villains after the hero. """
-        return self._villains_range[self._hero_position:]
+        return self.villains_range[self._hero_position:]
+
+    @property
+    def villains_before_position(self) -> Sequence[str]:
+        """ Get position name from villains before the hero. """
+        return [
+            self.position_to_abbreviation(i, self.n_seats)
+            for i in range(-len(self.villains_range), self.hero_index)
+        ]
+
+    @property
+    def villains_after_position(self) -> Sequence[str]:
+        """ Get position name from villains after the hero. """
+        return [
+            self.position_to_abbreviation(i, self.n_seats)
+            for i in range(self.hero_index + 1, 0)
+        ]
+
+    @property
+    def villains_before_chips(self) -> Sequence[float]:
+        """ Get ranges from villains before the hero. """
+        return self.villains_chips[: self._hero_position]
+
+    @property
+    def villains_after_chips(self) -> Sequence[float]:
+        """ Get ranges from villains after the hero. """
+        return self.villains_chips[self._hero_position:]
 
     @property
     def ante(self) -> float:
@@ -113,10 +146,12 @@ class Scenario:
         elif n_seats + position == 0:
             return "UTG"
         else:
-            return f"UTG + {n_seats + position}"
+            return f"UTG+{n_seats + position}"
 
     @staticmethod
-    def eval_ranges(hero_hand, villains_range, times=10000):
+    def eval_ranges(
+        hero_hand: str, villains_range: Sequence[float], times: int = 10000
+    ) -> Sequence[float]:
         """ Evaluate chances of hero winning against each villain range. """
         return [
             equity.equity([hero_hand, villain], times=times)[0]
@@ -124,19 +159,19 @@ class Scenario:
         ]
 
     @staticmethod
-    def expected_value(chances, profit, loss):
+    def expected_value(chances, success, failure):
         """
         Expected value.
 
         Args:
-            chances: Chances of winning (ratio).
-            profit: Profit when winning.
-            loss: Loss when losing.
+            chances: Chances of winning.
+            success: Success return value.
+            failure: failure return value.
 
         Returns:
             Expected value.
         """
-        return chances * profit - (1 - chances) * loss
+        return chances * success + (1 - chances) * failure
 
     def strategies_expected_value(self, chances, win_action, lose_action, no_action):
         """
@@ -179,7 +214,3 @@ class PushFoldScenario(Scenario):
         super().__init__(
             n_seats=n_seats, avg=field_call_avg, std=field_call_std, ante=ante
         )
-
-
-def hand_viz():
-    pass

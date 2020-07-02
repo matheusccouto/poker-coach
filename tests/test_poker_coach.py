@@ -30,23 +30,43 @@ class TestScenario:
     @staticmethod
     def test_hero_position():
         for _ in range(1000):
-            assert -9 <= poker_coach.Scenario(9).hero_position <= -1
+            assert -9 <= poker_coach.Scenario(9).hero_index <= -1
 
     @staticmethod
     def test_villain_chips():
         scene = poker_coach.Scenario(9)
-        for villain_chips in scene.villain_chips:
+        for villain_chips in scene.villains_chips:
             assert scene.MIN_BB <= villain_chips <= scene.MAX_BB
 
     @staticmethod
-    def test_villains_before_and_after_sum():
+    def test_villains_before_and_after_range_sum():
         scene = poker_coach.Scenario(10)
         assert len(scene.villains_after_range) + len(scene.villains_before_range) == 9
 
     @staticmethod
-    def test_villains_after_not_null():
+    def test_villains_after_range_not_null():
         scene = poker_coach.Scenario(10)
         assert len(scene.villains_after_range) != 0
+
+    @staticmethod
+    def test_villains_before_and_after_chips_sum():
+        scene = poker_coach.Scenario(10)
+        assert len(scene.villains_after_chips) + len(scene.villains_before_chips) == 9
+
+    @staticmethod
+    def test_villains_after_chips_not_null():
+        scene = poker_coach.Scenario(10)
+        assert len(scene.villains_after_chips) != 0
+
+    @staticmethod
+    def test_villains_after_position():
+        scene = poker_coach.Scenario(9)
+        assert "BB" in scene.villains_after_position
+
+    @staticmethod
+    def test_villains_after_position_not_null():
+        scene = poker_coach.Scenario(10)
+        assert len(scene.villains_after_position) != 0
 
     @staticmethod
     def test_ante():
