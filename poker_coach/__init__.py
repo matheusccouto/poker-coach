@@ -1,7 +1,7 @@
 # TODO Create hand visualizer
 # TODO Improve evaluation speed
 
-from typing import Sequence, Dict
+from typing import Sequence, Dict, Optional
 
 import numpy as np
 
@@ -20,7 +20,12 @@ class Scenario:
     MAX_ACTION: float = 100
 
     def __init__(
-        self, n_seats: int = 9, avg: float = 10, std: float = 10, ante: float = 12.5
+        self,
+        n_seats: int = 9,
+        avg: float = 10,
+        std: float = 10,
+        ante: float = 12.5,
+        random_state: Optional[int] = None,
     ):
         """
         Args:
@@ -28,27 +33,27 @@ class Scenario:
             avg: Field average on action taking percentage.
             std: Field standard deviation on action taking percentage.
             ante: Ante size (big blind percentage).
+            random_state: Random State.
         """
         self._n_seats = n_seats
         self._ante = ante
-        self._deck = poker.Deck()
+        self._deck = poker.Deck(random_state)
+
+        r = np.random.RandomState(random_state)
 
         # Add hero.
-        self._hero_chips = np.random.randint(self.MIN_BB, self.MAX_BB)
+        self._hero_chips = r.randint(self.MIN_BB, self.MAX_BB)
         self._hero_hand = "".join([str(self._deck.draw()) for _ in range(2)])
-        self._hero_position = np.random.randint(0, n_seats - 1)
+        self._hero_position = r.randint(0, n_seats - 1)
 
         # Add villains.
-        self._villains_range = [
-            np.random.normal(loc=avg, scale=std) for _ in range(n_seats - 1)
-        ]
+        self._villains_range = r.normal(loc=avg, scale=std, size=n_seats - 1)
+
         self._villains_range = np.clip(
             self._villains_range, self.MIN_ACTION, self.MAX_ACTION
         )
 
-        self._villains_chips = [
-            np.random.randint(self.MIN_BB, self.MAX_BB) for _ in range(n_seats - 1)
-        ]
+        self._villains_chips = r.randint(self.MIN_BB, self.MAX_BB, n_seats - 1)
 
     @property
     def n_seats(self) -> int:
@@ -93,7 +98,7 @@ class Scenario:
     @property
     def villains_after_range(self) -> Sequence[float]:
         """ Get ranges from villains after the hero. """
-        return self.villains_range[self._hero_position:]
+        return self.villains_range[self._hero_position :]
 
     @property
     def villains_before_position(self) -> Sequence[str]:
@@ -119,7 +124,7 @@ class Scenario:
     @property
     def villains_after_chips(self) -> Sequence[float]:
         """ Get ranges from villains after the hero. """
-        return self.villains_chips[self._hero_position:]
+        return self.villains_chips[self._hero_position :]
 
     @property
     def ante(self) -> float:
@@ -203,6 +208,7 @@ class PushFoldScenario(Scenario):
         field_call_avg: float = 10,
         field_call_std: float = 10,
         ante: float = 12.5,
+        random_state: Optional[int] = None,
     ):
         """
         Args:
@@ -210,7 +216,12 @@ class PushFoldScenario(Scenario):
             field_call_avg: Field average on call on hero push.
             field_call_std: Field standard deviation on call on hero push.
             ante: Ante size (big blind percentage).
+            random_state: Random state.
         """
         super().__init__(
-            n_seats=n_seats, avg=field_call_avg, std=field_call_std, ante=ante
+            n_seats=n_seats,
+            avg=field_call_avg,
+            std=field_call_std,
+            ante=ante,
+            random_state=random_state,
         )

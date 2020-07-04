@@ -1,3 +1,6 @@
+# TODO: Implement session state to control test and next button
+# TODO: Show results in the plot
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams

@@ -3,6 +3,7 @@
 import streamlit as st
 import numpy as np
 
+import st_state_patch
 import poker_coach
 from poker_coach import handviz
 
@@ -11,98 +12,15 @@ SUITS_EMOJIS = {"s": ":spades:", "h": ":hearts:", "c": ":clubs:", "d": ":diamond
 exception = None
 
 
-def push_fold(n_seats, avg, std):
+def push_fold(n_seats, avg, std, random_state):
     """ Push fold training scenario. """
-    scene = poker_coach.PushFoldScenario(
-        n_seats=n_seats, field_call_avg=avg, field_call_std=std
-    )
 
-    # Insert spaces for easily replacing for emojis.
-    hero_hand = " ".join([char for char in scene.hero_hand])
-    for old, new in SUITS_EMOJIS.items():
-        hero_hand = hero_hand.replace(f" {old}", new)
+    return result, explanation
 
-    hero_hand_descr = poker_coach.equity.hand_to_descr(scene.hero_hand)
-    hero_percentage = poker_coach.equity.descr_to_percentage(hero_hand_descr)
 
-    # Hero.
-    hero_position_name = scene.position_to_abbreviation(
-        scene.hero_index, scene.n_seats
-    )
-
-    # Villains
-    villains_after_name = list()
-    villain_position = scene.hero_index
-    for v_range, v_chips in zip(scene.villains_after_range, scene.villains_after_chips):
-        villain_position += 1
-        villain_position_name = scene.position_to_abbreviation(
-            villain_position, scene.n_seats
-        )
-        villains_after_name.append(villain_position_name)
-
-    fig = handviz.hand(
-        n_seats=n_seats,
-        pot=scene.pot,
-        hero_name=scene.hero_position,
-        hero_hand=scene.hero_hand,
-        hero_chips=scene.hero_chips,
-        villains_names=scene.villains_after_position,
-        villains_ranges=scene.villains_after_range,
-        villains_chips=scene.villains_after_chips,
-    )
-
-    st.pyplot(fig, clear_figure=True)
-
-    # User choices.
-    shove = st.button("Shove")
-    fold = st.button("Fold")
-    show_answer = any((shove, fold))
-
-    if show_answer:
-
-        with st.spinner("Calculating..."):
-
-            equities = scene.eval_ranges(
-                hero_hand=scene.hero_hand,
-                villains_range=scene.villains_after_range,
-                times=monte_carlo,
-            )
-
-            action_ev = list()
-            for action, chips in zip(equities, scene.villains_after_chips):
-                win = scene.pot + min(chips, scene.hero_chips)
-                lose = -1 * min(chips, scene.hero_chips)
-                ev = scene.expected_value(chances=action, success=win, failure=lose)
-                action_ev.append(ev)
-
-            excpected_values = list()
-            for action, aev in zip(scene.villains_after_range, action_ev):
-                ev = scene.expected_value(
-                    chances=1 - (action / 100), success=scene.pot, failure=aev
-                )
-                excpected_values.append(ev)
-
-            for eq, aev, ev in zip(equities, action_ev, excpected_values):
-                explanation = (
-                    f"Hero hand: {scene.hero_hand}\n"
-                    f"Equity against villain range: {eq}\n"
-                    f"Expected value when being called: {aev}\n"
-                    f"Expected value when stealing: {scene.pot}\n"
-                    f"Overall expected value {ev}"
-                )
-                st.text(explanation)
-
-        correct = np.random.choice([True, False])
-
-        if correct:
-            st.success(f"Correct")
-        else:
-            st.error(f"Wrong")
-
-        next_ = st.button("Next")
-        if next_:
-            show_answer = False
-
+s = st.State()
+if not s:
+    s.random_state = np.random.randint(0, 1e9)
 
 # Sidebar
 
@@ -154,7 +72,86 @@ else:
     raise (NotImplementedError("To be developed."))
 
 # Main
+
+if st.button("Next"):
+    s.random_state = np.random.randint(0, 1e9)
+
 if "Open Shove" in scenario:
-    push_fold(n_players, field_avg, field_std)
+
+    scene = poker_coach.PushFoldScenario(
+        n_seats=n_players,
+        field_call_avg=field_avg,
+        field_call_std=field_std,
+        random_state=s.random_state,
+    )
+
+    fig = handviz.hand(
+        n_seats=n_players,
+        pot=scene.pot,
+        hero_name=scene.hero_position,
+        hero_hand=scene.hero_hand,
+        hero_chips=scene.hero_chips,
+        villains_names=scene.villains_after_position,
+        villains_ranges=scene.villains_after_range,
+        villains_chips=scene.villains_after_chips,
+    )
+
+    st.pyplot(fig, clear_figure=True)
+
+    push = st.button("Push")
+    fold = st.button("Fold")
+
+    if push or fold:
+
+        with st.spinner("Calculating..."):
+
+            equities = scene.eval_ranges(
+                hero_hand=scene.hero_hand,
+                villains_range=scene.villains_after_range,
+                times=monte_carlo,
+            )
+
+            called_ev = list()
+            for action, chips in zip(equities, scene.villains_after_chips):
+                win = scene.pot + min(chips, scene.hero_chips)
+                lose = -1 * min(chips, scene.hero_chips)
+                ev = scene.expected_value(chances=action, success=win, failure=lose)
+                called_ev.append(ev)
+
+            overall_ev = list()
+            for action, aev in zip(scene.villains_after_range, called_ev):
+                ev = scene.expected_value(
+                    chances=1 - (action / 100), success=scene.pot, failure=aev
+                )
+                overall_ev.append(ev)
+
+            iterator = zip(
+                equities, called_ev, overall_ev, scene.villains_after_position
+            )
+            min_ev = np.inf
+            for eq, call, ev, villain in iterator:
+                if ev < min_ev:
+                    min_ev = ev
+                    explanation = (
+                        f"Hero hand is {scene.hero_hand}",
+                        f"Equity against {villain} is {100 * eq:.0f}%",
+                        f"Expected value when being called by {villain} is {call:.1f} BB",
+                        f"Expected value when stealing blinds is {scene.pot:n} BB",
+                        f"Expected value against {villain} is {ev:.1f} BB",
+                    )
+                    explanation = "\n".join(explanation)
+
+        result = min(overall_ev) > 1
+
+        st.write(result, push, fold)
+        if result is True and push is True:
+            st.success(f"Correct")
+        elif result is False and fold is True:
+            st.success(f"Correct")
+        else:
+            st.error(f"Wrong")
+        st.text(explanation)
+
 else:
+
     raise (NotImplementedError("To be developed."))
