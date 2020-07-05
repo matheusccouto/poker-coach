@@ -80,9 +80,7 @@ class TestScenario:
     def test_eval_ranges_len():
         scene = poker_coach.Scenario(2)
         eqs = scene.eval_ranges(
-            hero_hand=scene.hero_hand,
-            villains_range=scene.villains_range,
-            times=100,
+            hero_hand=scene.hero_hand, villains_range=scene.villains_range, times=100,
         )
         assert len(eqs) == 1
 
@@ -90,9 +88,7 @@ class TestScenario:
     def test_eval_ranges_values():
         scene = poker_coach.Scenario(2)
         eqs = scene.eval_ranges(
-            hero_hand=scene.hero_hand,
-            villains_range=scene.villains_range,
-            times=100,
+            hero_hand=scene.hero_hand, villains_range=scene.villains_range, times=100,
         )
         for eq in eqs:
             assert 0 < eq < 1
@@ -105,10 +101,7 @@ class TestScenario:
     def test_strategies_expected_value_len():
         scene = poker_coach.Scenario(2)
         evs = scene.strategies_expected_value(
-            chances=0.5,
-            win_action=1,
-            lose_action=-1,
-            no_action=0,
+            chances=0.5, win_action=1, lose_action=-1, no_action=0,
         )
         assert len(evs) == 2  # Push and fold EV.
 
@@ -116,9 +109,6 @@ class TestScenario:
     def test_strategies_expected_value_values():
         scene = poker_coach.Scenario(2)
         evs = scene.strategies_expected_value(
-            chances=0.5,
-            win_action=1,
-            lose_action=-1,
-            no_action=0,
+            chances=0.5, win_action=1, lose_action=-1, no_action=0,
         )
         assert evs[0] > 0 and evs[1] == 0

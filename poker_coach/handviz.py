@@ -1,5 +1,6 @@
 # TODO: Implement session state to control test and next button
 # TODO: Show results in the plot
+# TODO: Conditional coloring in the plot
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,8 +16,8 @@ SUITS_COLORS = {"s": "k", "h": "r", "c": "g", "d": "b"}
 
 def ellipse(theta):
     """ Ellipse shape."""
-    a = 1
-    b = 0.67
+    a = 2
+    b = 1
     return a * b / np.sqrt((a * np.sin(theta) ** 2) + (b * np.cos(theta) ** 2))
 
 
@@ -37,7 +38,7 @@ def hand(
     radius_arr = [ellipse(t) for t in theta_arr]
 
     # Seats coordinates.
-    seats_theta = np.linspace(start=0, stop=2 * np.pi, num=n_seats, endpoint=False)
+    seats_theta = -1 * np.linspace(start=0, stop=2 * np.pi, num=n_seats, endpoint=False)
     seats_radius = [ellipse(t) for t in seats_theta]
 
     # Place players into the seats. (+ 1 because of the hero).
@@ -46,10 +47,11 @@ def hand(
 
     # Create figure and polar axes.
     fig = plt.figure(figsize=(8, 4))
-    ax = fig.add_axes([.1, 0, .8, 1], polar=True)
+    ax = fig.add_axes([0.1, 0, 0.8, 1], polar=True)
 
     # Create table.
-    ax.plot(theta_arr, radius_arr, color="k")
+    ax.plot(theta_arr, radius_arr, color="gainsboro", linewidth=5)
+    ax.fill_between(theta_arr, radius_arr, color="whitesmoke")
     ax.axis("off")
 
     # Get hero hand percentage.
@@ -68,7 +70,7 @@ def hand(
     # Players
     for name, rng, chips, theta, radius in iterator:
 
-        bbox_props = dict(boxstyle="Round", fc="w", ec="k")
+        bbox_props = dict(boxstyle="Round", fc="whitesmoke", ec="gray")
         ax.annotate(
             f"{name} {rng:.0f}%\n{chips} BB",
             xy=(theta, radius),
@@ -83,7 +85,7 @@ def hand(
     # Dealer index.
     if n_seats == 2:
         dealer_idx = -2
-        move_small_blind = -.2  # Displace small blind to not overlap the button.
+        move_small_blind = -0.2  # Displace small blind to not overlap the button.
     elif len(players_name) == 2:
         dealer_idx = None
     else:
@@ -124,7 +126,7 @@ def hand(
     suit0 = card0[1]
     suit1 = card1[1]
 
-    bbox_props = dict(boxstyle="Round", fc="w", ec="k")
+    bbox_props = dict(boxstyle="Round", fc="w", ec="gray")
     hero_cards_kwargs = dict(
         va="center",
         bbox=bbox_props,

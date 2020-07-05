@@ -1,4 +1,5 @@
 """ Poker coach web user ui. """
+# TODO Make sure only the first answer is recorded
 
 import streamlit as st
 import numpy as np
@@ -11,13 +12,7 @@ SUITS_EMOJIS = {"s": ":spades:", "h": ":hearts:", "c": ":clubs:", "d": ":diamond
 
 exception = None
 
-
-def push_fold(n_seats, avg, std, random_state):
-    """ Push fold training scenario. """
-
-    return result, explanation
-
-
+# Session State
 s = st.State()
 if not s:
     s.random_state = np.random.randint(0, 1e9)
@@ -28,13 +23,10 @@ st.sidebar.title("Poker Coach")
 st.sidebar.text("Practice short-stacked no limit hold'em")
 
 st.sidebar.subheader("Scenario")
-scenario_options = (
-    "Open Shove",
-    "Call Shove",
-)
+scenario_options = ("Open Shove", "Call Shove")
 scenario = st.sidebar.selectbox(label="Select scenario:", options=scenario_options)
 n_players = st.sidebar.slider(
-    label="Number of Players:", min_value=2, max_value=9, value=9, step=1
+    label="Number of Players:", min_value=2, max_value=9, value=9
 )
 
 st.sidebar.subheader("Field")
@@ -141,17 +133,15 @@ if "Open Shove" in scenario:
                     )
                     explanation = "\n".join(explanation)
 
-        result = min(overall_ev) > 1
+        result = bool(min(overall_ev) > 1)
+        correct = (result and push) or (not result and fold)
 
-        st.write(result, push, fold)
-        if result is True and push is True:
+        if correct:
             st.success(f"Correct")
-        elif result is False and fold is True:
-            st.success(f"Correct")
+            s.correct_answers += 1
         else:
             st.error(f"Wrong")
         st.text(explanation)
 
 else:
-
     raise (NotImplementedError("To be developed."))

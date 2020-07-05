@@ -1,5 +1,6 @@
 """ Hand evaluation. """
 
+import cProfile
 import itertools
 import os
 from typing import Sequence, Dict, Iterator, Union
@@ -213,7 +214,22 @@ def percentage_range(percentage: float) -> str:
     Returns:
         Hand range.
     """
+    percentage = np.clip(percentage, 0.5, 100)
     return hand_ranking[hand_ranking["value"] <= percentage]["range"].values[-1]
+
+
+def percentage_descr(percentage: float) -> str:
+    """
+    Get hand descr from a ranking percentage.
+
+    Args:
+        percentage: Hand percentage.
+
+    Returns:
+        Hand description.
+    """
+    percentage = np.clip(percentage, 0.5, 100)
+    return hand_ranking[hand_ranking["value"] <= percentage]["hand"].values[-1]
 
 
 def flop_turn_river(dead: Sequence[str]) -> Sequence[str]:
@@ -266,7 +282,7 @@ def eval_directly(hand, board):
 
 # TODO: Create less precise but faster way
 def eval_single(
-    player_hands: Sequence[Iterator[str]], precise: bool = True
+    player_hands: Sequence[Iterator[str]], precise: bool = False
 ) -> np.array:
     """
     Evaluate a single game.
@@ -329,3 +345,8 @@ def equity(
         for descr in players_ranges
     ]
     return equity_from_range_descr(players_ranges, times)
+
+
+if __name__ == "__main__":
+
+    cProfile.run("equity(['AK', 'QQ'], times=10000)")

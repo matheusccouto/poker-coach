@@ -1,5 +1,5 @@
-# TODO Create hand visualizer
 # TODO Improve evaluation speed
+# TODO Create linear model
 
 from typing import Sequence, Dict, Optional
 
