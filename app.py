@@ -58,7 +58,7 @@ eval_options = ["Monte Carlo", "Linear Model"]
 eval_method = st.sidebar.selectbox(label="Evaluation method:", options=eval_options)
 if "Monte Carlo" in eval_method:
     monte_carlo = st.sidebar.number_input(
-        label="Number of runs:", min_value=100, value=100, step=100
+        label="Number of runs:", min_value=100, value=1000, step=100
     )
 else:
     raise (NotImplementedError("To be developed."))
@@ -138,7 +138,6 @@ if "Open Shove" in scenario:
 
         if correct:
             st.success(f"Correct")
-            s.correct_answers += 1
         else:
             st.error(f"Wrong")
         st.text(explanation)

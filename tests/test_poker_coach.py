@@ -95,7 +95,7 @@ class TestScenario:
 
     @staticmethod
     def test_expected_value():
-        assert poker_coach.Scenario.expected_value(0.25, 26000, 6400) == 1700
+        assert poker_coach.Scenario.expected_value(0.25, 26000, -6400) == 1700
 
     @staticmethod
     def test_strategies_expected_value_len():
@@ -109,6 +109,6 @@ class TestScenario:
     def test_strategies_expected_value_values():
         scene = poker_coach.Scenario(2)
         evs = scene.strategies_expected_value(
-            chances=0.5, win_action=1, lose_action=-1, no_action=0,
+            chances=0.5, win_action=1, lose_action=1, no_action=0,
         )
         assert evs[0] > 0 and evs[1] == 0

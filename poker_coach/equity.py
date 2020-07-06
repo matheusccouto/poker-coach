@@ -3,6 +3,7 @@
 import cProfile
 import itertools
 import os
+import random
 from typing import Sequence, Dict, Iterator, Union
 
 import numpy as np
@@ -244,7 +245,7 @@ def flop_turn_river(dead: Sequence[str]) -> Sequence[str]:
     """
     dead_concat = "".join(dead)
     deck = [card for card in DECK if card not in dead_concat]
-    return np.random.choice(deck, 5, replace=False)
+    return random.sample(deck, 5)
 
 
 def eval_combinations(hand, board):
@@ -294,7 +295,7 @@ def eval_single(
     Returns:
         Array where the hand winner is 1 and loser is 0.
     """
-    hands_list = [np.random.choice(hands) for hands in player_hands]
+    hands_list = [random.choice(hands) for hands in player_hands]
     board = flop_turn_river(dead=hands_list)
     if precise:
         eval_func = eval_combinations
@@ -348,5 +349,5 @@ def equity(
 
 
 if __name__ == "__main__":
-
+    # equity(['AK', 'QQ'], times=10000)
     cProfile.run("equity(['AK', 'QQ'], times=10000)")

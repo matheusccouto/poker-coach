@@ -147,7 +147,7 @@ class TestEquity:
         time = timeit.timeit(
             "eval_single([['QsQh'], ['AsKs']], False)", setup=setup, number=10000
         )
-        assert time < 10
+        assert time < 3
 
     @staticmethod
     def test_equity_from_range_descr():
