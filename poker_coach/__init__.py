@@ -66,9 +66,9 @@ class Scenario:
         return self._hero_chips
 
     @property
-    def villains_chips(self) -> Sequence[float]:
+    def villains_chips(self) -> np.ndarray:
         """ Get hero chips amount. """
-        return self._villains_chips
+        return np.array(self._villains_chips)
 
     @property
     def hero_hand(self) -> str:
@@ -86,45 +86,45 @@ class Scenario:
         return self.position_to_abbreviation(self.hero_index, self.n_seats)
 
     @property
-    def villains_range(self) -> Sequence[float]:
+    def villains_range(self) -> np.ndarray:
         """ Get villain ranges. """
-        return self._villains_range
+        return np.array(self._villains_range)
 
     @property
-    def villains_before_range(self) -> Sequence[float]:
+    def villains_before_range(self) -> np.ndarray:
         """ Get ranges from villains before the hero. """
-        return self.villains_range[: self._hero_position]
+        return np.array(self.villains_range[: self._hero_position])
 
     @property
-    def villains_after_range(self) -> Sequence[float]:
+    def villains_after_range(self) -> np.ndarray:
         """ Get ranges from villains after the hero. """
-        return self.villains_range[self._hero_position :]
+        return np.array(self.villains_range[self._hero_position :])
 
     @property
     def villains_before_position(self) -> Sequence[str]:
         """ Get position name from villains before the hero. """
-        return [
+        return np.array([
             self.position_to_abbreviation(i, self.n_seats)
             for i in range(-len(self.villains_range), self.hero_index)
-        ]
+        ])
 
     @property
     def villains_after_position(self) -> Sequence[str]:
         """ Get position name from villains after the hero. """
-        return [
+        return np.array([
             self.position_to_abbreviation(i, self.n_seats)
             for i in range(self.hero_index + 1, 0)
-        ]
+        ])
 
     @property
-    def villains_before_chips(self) -> Sequence[float]:
+    def villains_before_chips(self) -> np.ndarray:
         """ Get ranges from villains before the hero. """
-        return self.villains_chips[: self._hero_position]
+        return np.array(self.villains_chips[: self._hero_position])
 
     @property
-    def villains_after_chips(self) -> Sequence[float]:
+    def villains_after_chips(self) -> np.ndarray:
         """ Get ranges from villains after the hero. """
-        return self.villains_chips[self._hero_position :]
+        return np.array(self.villains_chips[self._hero_position :])
 
     @property
     def ante(self) -> float:
@@ -156,12 +156,12 @@ class Scenario:
     @staticmethod
     def eval_ranges(
         hero_hand: str, villains_range: Sequence[float], times: int = 10000
-    ) -> Sequence[float]:
+    ) -> np.ndarray:
         """ Evaluate chances of hero winning against each villain range. """
-        return [
+        return np.array([
             equity.equity([hero_hand, villain], times=times)[0]
             for villain in villains_range
-        ]
+        ])
 
     @staticmethod
     def expected_value(chances, success, failure):

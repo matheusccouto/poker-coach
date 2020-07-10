@@ -346,8 +346,3 @@ def equity(
         for descr in players_ranges
     ]
     return equity_from_range_descr(players_ranges, times)
-
-
-if __name__ == "__main__":
-    # equity(['AK', 'QQ'], times=10000)
-    cProfile.run("equity(['AK', 'QQ'], times=10000)")

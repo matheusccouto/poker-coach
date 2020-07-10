@@ -1,8 +1,8 @@
 """ Poker coach web user ui. """
-# TODO Make sure only the first answer is recorded
 
 import streamlit as st
 import numpy as np
+import pandas as pd
 
 import st_state_patch
 import poker_coach
@@ -102,45 +102,38 @@ if "Open Shove" in scenario:
                 villains_range=scene.villains_after_range,
                 times=monte_carlo,
             )
-
-            called_ev = list()
-            for action, chips in zip(equities, scene.villains_after_chips):
-                win = scene.pot + min(chips, scene.hero_chips)
-                lose = -1 * min(chips, scene.hero_chips)
-                ev = scene.expected_value(chances=action, success=win, failure=lose)
-                called_ev.append(ev)
-
-            overall_ev = list()
-            for action, aev in zip(scene.villains_after_range, called_ev):
-                ev = scene.expected_value(
-                    chances=1 - (action / 100), success=scene.pot, failure=aev
-                )
-                overall_ev.append(ev)
-
-            iterator = zip(
-                equities, called_ev, overall_ev, scene.villains_after_position
+            win_value = scene.pot + np.minimum(
+                scene.villains_after_chips, scene.hero_chips
             )
-            min_ev = np.inf
-            for eq, call, ev, villain in iterator:
-                if ev < min_ev:
-                    min_ev = ev
-                    explanation = (
-                        f"Hero hand is {scene.hero_hand}",
-                        f"Equity against {villain} is {100 * eq:.0f}%",
-                        f"Expected value when being called by {villain} is {call:.1f} BB",
-                        f"Expected value when stealing blinds is {scene.pot:n} BB",
-                        f"Expected value against {villain} is {ev:.1f} BB",
-                    )
-                    explanation = "\n".join(explanation)
+            lose_value = -1 * np.minimum(scene.villains_after_chips, scene.hero_chips)
+            showdown_value = scene.expected_value(
+                chances=equities, success=win_value, failure=lose_value,
+            )
+            fold_equity = scene.pot * (1 - scene.villains_after_range / 100)
+            expected_values = np.add(showdown_value, fold_equity)
+            composed_value = np.average(
+                expected_values, weights=scene.villains_after_range
+            )
 
-        result = bool(min(overall_ev) > 1)
+            df = pd.DataFrame(
+                {
+                    "Equity (%)": equities,
+                    "Showdown Value (BB)": showdown_value,
+                    "Fold Equity (BB)": fold_equity,
+                    "Expected Value (BB)": expected_values,
+                },
+                index=scene.villains_after_position
+            )
+
+        result = bool(min(expected_values) > 0)
         correct = (result and push) or (not result and fold)
 
         if correct:
             st.success(f"Correct")
         else:
             st.error(f"Wrong")
-        st.text(explanation)
+
+        st.table(data=df.style.format("{:.2f}"))
 
 else:
     raise (NotImplementedError("To be developed."))
