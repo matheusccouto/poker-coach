@@ -1,5 +1,7 @@
 """ Poker coach web user ui. """
 
+import joblib
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -54,14 +56,14 @@ else:
     raise (NotImplementedError("To be developed."))
 
 st.sidebar.subheader("Evaluation")
-eval_options = ["Monte Carlo", "Linear Model"]
+eval_options = ["Monte Carlo", "Model"]
 eval_method = st.sidebar.selectbox(label="Evaluation method:", options=eval_options)
 if "Monte Carlo" in eval_method:
     monte_carlo = st.sidebar.number_input(
-        label="Number of runs:", min_value=100, value=1000, step=100
+        label="Number of runs:", min_value=100, value=10000, step=100
     )
 else:
-    raise (NotImplementedError("To be developed."))
+    model = joblib.load("model.pkl")
 
 # Main
 
@@ -97,11 +99,19 @@ if "Open Shove" in scenario:
 
         with st.spinner("Calculating..."):
 
-            equities = scene.eval_ranges(
-                hero_hand=scene.hero_hand,
-                villains_range=scene.villains_after_range,
-                times=monte_carlo,
-            )
+            if "Monte Carlo" in eval_method:
+                equities = scene.eval_ranges(
+                    hero_hand=scene.hero_hand,
+                    villains_range=scene.villains_after_range,
+                    times=monte_carlo,
+                )
+            else:
+                hero_descr = poker_coach.equity.hand_to_descr(scene.hero_hand)
+                hero_rng = poker_coach.equity.descr_to_percentage(hero_descr)
+                equities = np.array([
+                    model.predict(np.array([[hero_rng, villain_rng]]))[0]
+                    for villain_rng in scene.villains_after_range
+                ])
             win_value = scene.pot + np.minimum(
                 scene.villains_after_chips, scene.hero_chips
             )
@@ -111,9 +121,6 @@ if "Open Shove" in scenario:
             )
             fold_equity = scene.pot * (1 - scene.villains_after_range / 100)
             expected_values = np.add(showdown_value, fold_equity)
-            composed_value = np.average(
-                expected_values, weights=scene.villains_after_range
-            )
 
             df = pd.DataFrame(
                 {
@@ -122,7 +129,7 @@ if "Open Shove" in scenario:
                     "Fold Equity (BB)": fold_equity,
                     "Expected Value (BB)": expected_values,
                 },
-                index=scene.villains_after_position
+                index=scene.villains_after_position,
             )
 
         result = bool(min(expected_values) > 0)
@@ -136,4 +143,4 @@ if "Open Shove" in scenario:
         st.table(data=df.style.format("{:.2f}"))
 
 else:
-    raise (NotImplementedError("To be developed."))
+    raise NotImplementedError("To be developed.")
