@@ -1,6 +1,5 @@
 """ Hand evaluation. """
 
-import cProfile
 import itertools
 import os
 import random
@@ -9,7 +8,7 @@ from typing import Sequence, Dict, Iterator, Union
 import numpy as np
 import pandas as pd
 
-import poker
+import bluff
 
 from poker_coach import utils
 
@@ -261,7 +260,7 @@ def eval_combinations(hand, board):
     """
     cards = np.concatenate([[hand[:2], hand[2:]], board])
     combos = itertools.combinations(cards, r=5)
-    return np.max([poker.Hand("".join(combo)).value for combo in combos])
+    return np.max([bluff.Hand("".join(combo)).value for combo in combos])
 
 
 def eval_directly(hand, board):
@@ -278,7 +277,7 @@ def eval_directly(hand, board):
         Highest hand value.
     """
     cards = np.concatenate([[hand[:2], hand[2:]], board])
-    return poker.Hand("".join(cards)).value
+    return bluff.Hand("".join(cards)).value
 
 
 # TODO: Create less precise but faster way

@@ -1,43 +1,47 @@
-# TODO Improve evaluation speed
-# TODO Create linear model
-
-from typing import Sequence, Dict, Optional
+from typing import Iterator
+from typing import Sequence, Optional, Tuple
 
 import numpy as np
 
-import poker
-from poker import holdem
+import bluff
 from poker_coach import equity
+
+
+def flatten(i: Iterator) -> Iterator:
+    """ Flatten an irregular iterable. """
+    for i in i:
+        if isinstance(i, Iterator):
+            yield from i
+        else:
+            yield i
 
 
 class Scenario:
     """ General training scenario. """
 
-    MIN_BB: int = 3
-    MAX_BB: int = 15
+    MIN_BB: int = 1
+    MAX_BB: int = 20
 
-    MIN_ACTION: float = 1
+    MIN_ACTION: float = 5
     MAX_ACTION: float = 100
 
     def __init__(
         self,
         n_seats: int = 9,
-        avg: float = 10,
-        std: float = 10,
+        field: Tuple[float, float, float] = 10,
         ante: float = 12.5,
         random_state: Optional[int] = None,
     ):
         """
         Args:
             n_seats: Number of players in the table.
-            avg: Field average on action taking percentage.
-            std: Field standard deviation on action taking percentage.
+            field: Tuple with min, mode and max field action.
             ante: Ante size (big blind percentage).
             random_state: Random State.
         """
         self._n_seats = n_seats
         self._ante = ante
-        self._deck = poker.Deck(random_state)
+        self._deck = bluff.Deck(random_state)
 
         r = np.random.RandomState(random_state)
 
@@ -47,7 +51,9 @@ class Scenario:
         self._hero_position = r.randint(0, n_seats - 1)
 
         # Add villains.
-        self._villains_range = r.normal(loc=avg, scale=std, size=n_seats - 1)
+        self._villains_range = r.triangular(
+            left=field[0], mode=field[1], right=field[2], size=n_seats - 1
+        )
 
         self._villains_range = np.clip(
             self._villains_range, self.MIN_ACTION, self.MAX_ACTION
@@ -103,18 +109,22 @@ class Scenario:
     @property
     def villains_before_position(self) -> Sequence[str]:
         """ Get position name from villains before the hero. """
-        return np.array([
-            self.position_to_abbreviation(i, self.n_seats)
-            for i in range(-len(self.villains_range), self.hero_index)
-        ])
+        return np.array(
+            [
+                self.position_to_abbreviation(i, self.n_seats)
+                for i in range(-len(self.villains_range), self.hero_index)
+            ]
+        )
 
     @property
     def villains_after_position(self) -> Sequence[str]:
         """ Get position name from villains after the hero. """
-        return np.array([
-            self.position_to_abbreviation(i, self.n_seats)
-            for i in range(self.hero_index + 1, 0)
-        ])
+        return np.array(
+            [
+                self.position_to_abbreviation(i, self.n_seats)
+                for i in range(self.hero_index + 1, 0)
+            ]
+        )
 
     @property
     def villains_before_chips(self) -> np.ndarray:
@@ -158,10 +168,12 @@ class Scenario:
         hero_hand: str, villains_range: Sequence[float], times: int = 10000
     ) -> np.ndarray:
         """ Evaluate chances of hero winning against each villain range. """
-        return np.array([
-            equity.equity([hero_hand, villain], times=times)[0]
-            for villain in villains_range
-        ])
+        return np.array(
+            [
+                equity.equity([hero_hand, villain], times=times)[0]
+                for villain in villains_range
+            ]
+        )
 
     @staticmethod
     def expected_value(chances, success, failure):
@@ -205,23 +217,17 @@ class PushFoldScenario(Scenario):
     def __init__(
         self,
         n_seats: int = 9,
-        field_call_avg: float = 10,
-        field_call_std: float = 10,
+        field: Tuple[float, float, float] = 10,
         ante: float = 12.5,
         random_state: Optional[int] = None,
     ):
         """
         Args:
             n_seats: Number of players in the table.
-            field_call_avg: Field average on call on hero push.
-            field_call_std: Field standard deviation on call on hero push.
+            field: Tuple with min, mode and max field action.
             ante: Ante size (big blind percentage).
             random_state: Random state.
         """
         super().__init__(
-            n_seats=n_seats,
-            avg=field_call_avg,
-            std=field_call_std,
-            ante=ante,
-            random_state=random_state,
+            n_seats=n_seats, field=field, ante=ante, random_state=random_state,
         )

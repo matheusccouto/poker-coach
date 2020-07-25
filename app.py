@@ -32,31 +32,22 @@ n_players = st.sidebar.slider(
 )
 
 st.sidebar.subheader("Field")
-field_options = [
-    "Custom",
-    "Micro-stakes",
-    "Small-stakes",
-    "Medium-stakes",
-    "High-stakes",
-]
-field_level = st.sidebar.selectbox(label="Select field level:", options=field_options)
-if "Custom" in field_level:
-    field_avg = st.sidebar.number_input(
-        label="Average action (%)", min_value=1, max_value=100, value=20, step=1
-    )
+field_mode = st.sidebar.slider(
+    label="Action mode (%)", min_value=1, max_value=99, value=20, step=1
+)
+field_bandwidth = st.sidebar.slider(
+    label="Action bandwidth (%)", min_value=1, max_value=99, value=50, step=1
+)
 
-    field_std = st.sidebar.number_input(
-        label="Action standard deviation (%)",
-        min_value=1,
-        max_value=100,
-        value=20,
-        step=1,
-    )
-else:
-    raise (NotImplementedError("To be developed."))
+field_min = float(np.clip(field_mode - (field_bandwidth / 2), 0, 100))
+field_max = float(np.clip(field_mode + (field_bandwidth / 2), 0, 100))
+
 
 st.sidebar.subheader("Evaluation")
-eval_options = ["Monte Carlo", "Model"]
+eval_options = [
+    "Model",
+    "Monte Carlo",
+]
 eval_method = st.sidebar.selectbox(label="Evaluation method:", options=eval_options)
 if "Monte Carlo" in eval_method:
     monte_carlo = st.sidebar.number_input(
@@ -74,8 +65,7 @@ if "Open Shove" in scenario:
 
     scene = poker_coach.PushFoldScenario(
         n_seats=n_players,
-        field_call_avg=field_avg,
-        field_call_std=field_std,
+        field=(field_min, field_mode, field_max),
         random_state=s.random_state,
     )
 
@@ -108,10 +98,12 @@ if "Open Shove" in scenario:
             else:
                 hero_descr = poker_coach.equity.hand_to_descr(scene.hero_hand)
                 hero_rng = poker_coach.equity.descr_to_percentage(hero_descr)
-                equities = np.array([
-                    model.predict(np.array([[hero_rng, villain_rng]]))[0]
-                    for villain_rng in scene.villains_after_range
-                ])
+                equities = np.array(
+                    [
+                        model.predict(np.array([[hero_rng, villain_rng]]))[0]
+                        for villain_rng in scene.villains_after_range
+                    ]
+                )
             win_value = scene.pot + np.minimum(
                 scene.villains_after_chips, scene.hero_chips
             )
