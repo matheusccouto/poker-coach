@@ -4,7 +4,7 @@ from typing import Sequence, Optional, Tuple
 import numpy as np
 
 import bluff
-from poker_coach import equity
+from bluff.holdem import equity
 
 
 def flatten(i: Iterator) -> Iterator:
@@ -28,7 +28,7 @@ class Scenario:
     def __init__(
         self,
         n_seats: int = 9,
-        field: Tuple[float, float, float] = 10,
+        field: Tuple[float, float, float] = (5, 20, 50),
         ante: float = 12.5,
         random_state: Optional[int] = None,
     ):
