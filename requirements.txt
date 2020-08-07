@@ -1,0 +1,6 @@
+numpy~=1.18.5
+matplotlib~=3.2.2
+bluff~=1.0.2
+joblib~=0.16.0
+streamlit~=0.62.0
+pandas~=1.0.5
