@@ -4,3 +4,4 @@ bluff~=1.0.2
 joblib~=0.16.0
 streamlit~=0.62.0
 pandas~=1.0.5
+scikit-learn~=0.23.1
