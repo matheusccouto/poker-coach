@@ -10,8 +10,6 @@ import st_state_patch
 import poker_coach
 from poker_coach import handviz
 
-SUITS_EMOJIS = {"s": ":spades:", "h": ":hearts:", "c": ":clubs:", "d": ":diamonds:"}
-
 exception = None
 
 # Session State
@@ -21,8 +19,7 @@ if not s:
 
 # Sidebar
 
-st.sidebar.title("Poker Coach")
-st.sidebar.text("Practice short-stacked no limit hold'em")
+st.sidebar.markdown("# My Poker Coach\nPractice short-stacked no limit hold'em")
 
 st.sidebar.subheader("Scenario")
 scenario_options = ("Open Shove", "Call Shove")
@@ -45,8 +42,8 @@ field_max = float(np.clip(field_mode + (field_bandwidth / 2), 0, 100))
 
 st.sidebar.subheader("Evaluation")
 eval_options = [
-    "Model",
     "Monte Carlo",
+    "Model",
 ]
 eval_method = st.sidebar.selectbox(label="Evaluation method:", options=eval_options)
 if "Monte Carlo" in eval_method:
@@ -136,3 +133,8 @@ if "Open Shove" in scenario:
 
 else:
     raise NotImplementedError("To be developed.")
+
+st.sidebar.markdown("")
+st.sidebar.markdown("")
+st.sidebar.markdown("Powered by [bluff](https://github.com/matheusccouto/bluff)")
+st.sidebar.markdown("Contribute on [github](https://github.com/matheusccouto/poker-coach)")
