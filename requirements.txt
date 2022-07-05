@@ -1,4 +1,4 @@
-numpy~=1.18.5
+numpy>=1.22.0
 matplotlib~=3.2.2
 bluff~=1.0.2
 joblib~=0.16.0
