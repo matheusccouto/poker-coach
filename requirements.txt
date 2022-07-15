@@ -1,5 +1,5 @@
-bluff~=1.0.2
-matplotlib~=3.2.2
-streamlit~=0.62.0
-pandas~=1.0.5
-scikit-learn~=0.23.1
+matplotlib
+bluff
+pandas
+scikit-learn
+streamlit==0.62.0
