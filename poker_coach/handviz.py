@@ -50,8 +50,8 @@ def hand(
     ax = fig.add_axes([0.1, 0, 0.8, 1], polar=True)
 
     # Create table.
-    ax.plot(theta_arr, radius_arr, color="sienna", linewidth=5)
-    ax.fill_between(theta_arr, radius_arr, color="darkgreen")
+    ax.plot(theta_arr, radius_arr, color="gainsboro", linewidth=5)
+    ax.fill_between(theta_arr, radius_arr, color="whitesmoke")
     ax.axis("off")
 
     # Get hero hand percentage.
