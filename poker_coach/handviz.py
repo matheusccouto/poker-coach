@@ -70,7 +70,7 @@ def hand(
     # Players
     for name, rng, chips, theta, radius in iterator:
 
-        bbox_props = dict(boxstyle="Round", fc="whitesmoke", ec="gray")
+        bbox_props = dict(boxstyle="Round", fc="whitesmoke", ec="green")
         ax.annotate(
             f"{name} {rng:.0f}%\n{chips} BB",
             xy=(theta, radius),
