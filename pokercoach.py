@@ -19,7 +19,7 @@ if not s:
     s.random_state = np.random.randint(0, 1e9)
 
 # Sidebar
-myImage=Image.open("/img/Logo.png")
+myImage=Image.open("img/Logo.png")
 myImage.show()
 st.sidebar.markdown("# Aspiring Poker Pro Coach\nPractice short-stacked no limit hold'em")
 
