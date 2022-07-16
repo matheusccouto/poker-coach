@@ -9,6 +9,7 @@ import pandas as pd
 import st_state_patch
 import poker_coach
 from poker_coach import handviz
+from PIL import Image
 
 exception = None
 
@@ -18,8 +19,9 @@ if not s:
     s.random_state = np.random.randint(0, 1e9)
 
 # Sidebar
-
-st.sidebar.markdown("# My Poker Coach\nPractice short-stacked no limit hold'em")
+myImage=Image.open("img/Logo.png")
+st.sidebar.logo(myImage.show())
+st.sidebar.markdown("# Asspiring Poker Pro\nPractice short-stacked no limit hold'em")
 
 st.sidebar.subheader("Scenario")
 scenario_options = ("Open Shove", "Call Shove")
@@ -136,5 +138,4 @@ else:
 
 st.sidebar.markdown("")
 st.sidebar.markdown("")
-st.sidebar.markdown("Powered by [bluff](https://github.com/matheusccouto/bluff)")
-st.sidebar.markdown("Contribute on [github](https://github.com/matheusccouto/poker-coach)")
+st.sidebar.markdown("Back to [AspiringPokerPro.com](https://www.aspiringpokerpro.com)")
