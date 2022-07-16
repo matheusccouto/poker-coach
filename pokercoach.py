@@ -23,6 +23,7 @@ myImage=Image.open("img/Logo.png")
 myImage.show()
 st.sidebar.image(myImage)
 st.sidebar.markdown("# Aspiring Poker Pro Coach\nPractice short-stacked no limit hold'em")
+st.sidebar.markdown("Back to [AspiringPokerPro.com](https://www.aspiringpokerpro.com)")
 
 st.sidebar.subheader("Scenario")
 scenario_options = ("Open Shove", "Call Shove")
@@ -139,4 +140,4 @@ else:
 
 st.sidebar.markdown("")
 st.sidebar.markdown("")
-st.sidebar.markdown("Back to [AspiringPokerPro.com](https://www.aspiringpokerpro.com)")
+
