@@ -46,7 +46,7 @@ def hand(
     players_radius = [seats_radius[i] for i in range(len(villains_names) + 1)]
 
     # Create figure and polar axes.
-    fig = plt.figure(figsize=(8, 4))
+    fig = plt.figure(figsize=(16, 8))
     ax = fig.add_axes([0.1, 0, 0.8, 1], polar=True)
 
     # Create table.
