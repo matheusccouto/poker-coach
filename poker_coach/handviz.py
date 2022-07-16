@@ -126,7 +126,7 @@ def hand(
     suit0 = card0[1]
     suit1 = card1[1]
 
-    bbox_props = dict(boxstyle="Round", fc="w", ec="gray")
+    bbox_props = dict(boxstyle="Round", fc="w", ec="green")
     hero_cards_kwargs = dict(
         va="center",
         bbox=bbox_props,
