@@ -51,7 +51,7 @@ def hand(
 
     # Create table.
     ax.plot(theta_arr, radius_arr, color="gainsboro", linewidth=5)
-    ax.fill_between(theta_arr, radius_arr, color="red")
+    ax.fill_between(theta_arr, radius_arr, color="darkgreen")
     ax.axis("off")
 
     # Get hero hand percentage.
