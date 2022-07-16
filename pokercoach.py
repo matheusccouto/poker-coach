@@ -20,8 +20,8 @@ if not s:
 
 # Sidebar
 myImage=Image.open("img/Logo.png")
-st.sidebar.markdown(myImage.show())
-st.sidebar.markdown("# Asspiring Poker Pro\nPractice short-stacked no limit hold'em")
+myImage.show()
+st.sidebar.markdown("# Aspiring Poker Pro Coach\nPractice short-stacked no limit hold'em")
 
 st.sidebar.subheader("Scenario")
 scenario_options = ("Open Shove", "Call Shove")
