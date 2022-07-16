@@ -20,7 +20,8 @@ if not s:
 
 # Sidebar
 myImage=Image.open("img/Logo.png")
-myImage.show()
+#myImage.show()
+st.imshow(myImage)
 st.sidebar.markdown("# Aspiring Poker Pro Coach\nPractice short-stacked no limit hold'em")
 
 st.sidebar.subheader("Scenario")
