@@ -34,7 +34,7 @@ def hand(
     """ Hand viewer. """
 
     # Table line
-    theta_arr = np.linspace(start=0, stop=2 * np.pi, num=100, endpoint=True)
+    theta_arr = np.linspace(start=0, stop=2 * np.pi, num=200, endpoint=True)
     radius_arr = [ellipse(t) for t in theta_arr]
 
     # Seats coordinates.
