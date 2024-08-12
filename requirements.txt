@@ -2,4 +2,4 @@ matplotlib
 bluff
 pandas
 scikit-learn
-streamlit==0.62.0
+streamlit==1.37.0
